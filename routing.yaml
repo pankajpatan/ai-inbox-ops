@@ -1,0 +1,57 @@
+# Inbox rules for the sample business. Change this file, not the code.
+business: Harbor Home Services
+description: >
+  Small home-repair company: plumbing, heating, electrical repairs and handyman jobs for homes
+  and small offices. The office inbox gets job requests, quote requests, complaints, invoice
+  and payment emails, supplier mail and marketing.
+timezone: America/New_York
+
+categories:
+  new_job: A customer wants work booked or a technician sent.
+  quote_request: A customer wants a price or estimate before booking.
+  complaint: A customer is unhappy with work, staff, a delay or a bill.
+  invoice_payment: Invoices, payments, receipts, refunds or billing questions from customers.
+  supplier: Messages from suppliers, partners or contractors we buy from or work with.
+  spam_marketing: Sales pitches, newsletters, SEO or lead-selling offers, and anything automated that needs no action.
+  other: Anything else that a person should still read.
+
+urgency:
+  now: Damage or danger happening now, such as an active leak or flooding, no heat in freezing weather, a gas smell, sparks or burning smell, or someone locked out.
+  today: Needs a reply today, such as a job wanted this week, an unhappy customer, or a payment problem.
+  later: Can wait more than a day.
+
+people:
+  office: {name: Office team, email: office@harbor.example}
+  manager: {name: Dana (manager), email: dana@harbor.example}
+  accounts: {name: Accounts, email: accounts@harbor.example}
+
+# First matching rule wins. "urgency" and "category" can be one value or a list.
+rules:
+  - {category: complaint, assign: manager, reply_within_hours: 4, alert: true}
+  - {category: [new_job, quote_request], urgency: now, assign: office, reply_within_hours: 1, alert: true}
+  - {category: [new_job, quote_request], urgency: today, assign: office, reply_within_hours: 8}
+  - {category: [new_job, quote_request], assign: office, reply_within_hours: 24}
+  - {category: invoice_payment, urgency: [now, today], assign: accounts, reply_within_hours: 24, alert: true}
+  - {category: invoice_payment, assign: accounts, reply_within_hours: 48}
+  - {category: supplier, assign: office, reply_within_hours: 72}
+  - {category: spam_marketing, assign: null}          # labelled only: no deadline, no draft
+  - {category: other, assign: office, reply_within_hours: 48}
+
+# Suggested replies are saved as Gmail drafts. A person always sends them.
+reply:
+  sender_name: Sam at Harbor Home Services
+  draft_for: [new_job, quote_request, complaint]
+  allow_prices: false
+  phone: (555) 010-2030
+
+# Used only by the keyword fallback (no API key). Claude reads the descriptions above instead.
+keywords:
+  spam_marketing: [unsubscribe, seo services, backlinks, guest post, newsletter, limited time offer, lead generation]
+  complaint: [unhappy, disappointed, complaint, still not fixed, terrible, refund, not acceptable, rude]
+  invoice_payment: [invoice, payment, receipt, paid, billing, charged]
+  supplier: [purchase order, delivery schedule, price list, your order, shipment]
+  quote_request: [quote, estimate, how much, price for, cost]
+  new_job: [can you come, can someone come, need a plumber, need someone, book, appointment, repair, fix, leak,
+            leaking, broken, not working, stopped working]
+urgent_keywords: [flooding, water everywhere, water is coming through, coming through the ceiling, burst, gas smell,
+                  smell gas, sparks, burning smell, no heat, locked out, emergency]
