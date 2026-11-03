@@ -5,6 +5,7 @@
     python -m inbox.google_setup create-sheet  # creates the "Inbox log" spreadsheet, saves SHEET_ID to .env
     python -m inbox.google_setup seed          # puts the fictional sample emails into the test inbox
     python -m inbox.google_setup seed-jobs     # writes about 9 weeks of fictional jobs to a "Jobs" tab
+    python -m inbox.google_setup labels        # creates every AI/... label (the n8n version needs them)
 
 Every command except login refuses to run unless the token belongs to INBOX_TEST_ACCOUNT (.env),
 so a personal inbox is never touched by mistake. Nothing here sends email.
@@ -44,7 +45,7 @@ def require_test_account(gmail) -> str:
 def main() -> None:
     load_dotenv(ENV)
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["login", "whoami", "create-sheet", "seed", "seed-jobs"])
+    p.add_argument("command", choices=["login", "whoami", "create-sheet", "seed", "seed-jobs", "labels"])
     p.add_argument("--fixture", default=str(ROOT / "fixtures" / "sample_inbox.jsonl"))
     args = p.parse_args()
 
@@ -76,6 +77,16 @@ def main() -> None:
             mailbox.insert_test_email(d["from_name"], d["from_email"], d["subject"], d["body"], when)
             count += 1
         print(f"Inserted {count} fictional emails into {who}'s inbox (nothing was sent).")
+    elif args.command == "labels":
+        from .google_api import DEMO_LABEL, PROCESSED_LABEL, REPORT_LABEL
+        from .service import LABELS
+        names = [f"AI/{v}" for v in LABELS.values()] + ["AI/Urgent", PROCESSED_LABEL, REPORT_LABEL, DEMO_LABEL]
+        GmailMailbox(gmail)._label_ids(names)
+        print(f"Labels ready: {', '.join(names)}")
+        if os.getenv("SHEET_ID"):  # make sure the log's header has every column
+            from .google_api import LOG_COLUMNS
+            GoogleSheet(sheets, os.environ["SHEET_ID"])._write_header()
+            print(f"Inbox log header: {len(LOG_COLUMNS)} columns")
     elif args.command == "seed-jobs":
         import datetime as dt
         from zoneinfo import ZoneInfo

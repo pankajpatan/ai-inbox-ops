@@ -167,6 +167,20 @@ def template_summary(m: dict[str, Any], issues: list[str]) -> str:
     return " ".join(parts)
 
 
+def summary_system(rules: Rules) -> str:
+    return (f"You write the weekly summary for the owner of {rules.business}.\n"
+            "Rules:\n- 3 to 5 plain sentences. No headings, lists or markdown.\n"
+            "- Use only numbers that appear in the data, written exactly as there (digits, not words). "
+            "Do not calculate new numbers, totals or percentages.\n"
+            "- Lead with what changed most, then anything that needs action.\n"
+            "- Do not guess causes the data does not show.")
+
+
+def summary_user(m: dict[str, Any], issues: list[str]) -> str:
+    return f"Data for the week:\n{json.dumps(m, indent=1)}\n\nIssues found by the rules:\n" + (
+        "\n".join(f"- {i}" for i in issues) or "- none")
+
+
 class _SummaryOut(BaseModel):
     summary: str
 
@@ -178,14 +192,8 @@ class ClaudeSummary:
         self.client = client or anthropic.Anthropic(api_key=api_key, max_retries=3, timeout=60.0)
 
     def write(self, m: dict[str, Any], issues: list[str], rules: Rules) -> str:
-        system = (f"You write the weekly summary for the owner of {rules.business}.\n"
-                  "Rules:\n- 3 to 5 plain sentences. No headings, lists or markdown.\n"
-                  "- Use only numbers that appear in the data, written exactly as there (digits, not words). "
-                  "Do not calculate new numbers, totals or percentages.\n"
-                  "- Lead with what changed most, then anything that needs action.\n"
-                  "- Do not guess causes the data does not show.")
-        user = f"Data for the week:\n{json.dumps(m, indent=1)}\n\nIssues found by the rules:\n" + (
-            "\n".join(f"- {i}" for i in issues) or "- none")
+        system = summary_system(rules)
+        user = summary_user(m, issues)
         kwargs: dict[str, Any] = {}
         if self.model in FALLBACK_MODELS:
             kwargs = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}

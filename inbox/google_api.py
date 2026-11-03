@@ -30,7 +30,7 @@ DEMO_LABEL = "Demo"
 REPORT_LABEL = "AI/Report"
 DEFAULT_QUERY = "in:inbox -from:me newer_than:14d"
 LOG_COLUMNS = ["received", "from", "subject", "category", "urgency", "assigned_to", "reply_by", "summary",
-               "phone", "draft", "status", "link"]
+               "phone", "draft", "status", "link", "received_iso"]
 
 
 def load_credentials(interactive: bool = False):

@@ -194,6 +194,7 @@ class Pipeline:
                                          else "")) if actions["draft_id"] else "",
                     "status": "open" if row["deadline"] else "no reply needed",
                     "link": email.link or "",
+                    "received_iso": dt.datetime.fromtimestamp(row["received_at"], self.tz).isoformat(timespec="minutes"),
                 })
                 save()
         except Exception as exc:

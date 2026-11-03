@@ -1,48 +1,19 @@
 # AI Inbox Ops
 
-Sorts a service business's inbox: each email gets a category and an urgency (backed by a quote from the email), is assigned to the right person with a reply deadline, gets a suggested reply saved as a draft, and is logged to a sheet. A follow-up check flags emails that are past their deadline with no reply. A weekly report is coming in a later milestone.
+Sorts a service business's inbox: each email gets a category and an urgency (backed by a quote from the email), is assigned to the right person with a reply deadline, gets a suggested reply saved as a draft, and is logged to a sheet. A follow-up check flags emails that are past their deadline with no reply, and every Monday the owner gets a weekly report whose figures are computed in code.
 
 The sample business, Harbor Home Services (home repairs), is fictional. Its rules are in `routing.yaml`.
 
-## Status
-Milestones 1 to 4 of 5 are done: inbox sorting with a measured eval, real Gmail and Google Sheets connections, and the weekly report.
+**Two versions of the same flow:**
+- **Python app:** inbox sorting with a measured eval, real Gmail and Google Sheets, follow-ups, the weekly report and a dashboard. All of it runs in one process (`python -m inbox.web`).
+- **n8n workflows** (`n8n/`): triage, weekly report and error alert, built from the same rules and prompts, and tested on n8n 2.46.4. See [`n8n/README.md`](n8n/README.md).
 
-Tested live on 2026-11-03 against a demo Gmail account:
-- 7 fictional emails were labelled, routed and logged to a Google Sheet.
-- 4 threaded reply drafts were created, and the urgent and overdue alerts fired.
-- A weekly report was built from 98 fictional jobs and the inbox log. It flagged the 3 planted issues, and Claude's summary passed the number check.
-- The report was placed in the owner's inbox and added to the sheet, and running it again changed nothing.
-- The Sent folder stayed empty.
+Tested live on 2026-11-03 against a demo Gmail account with fictional emails:
+- **Python:** 7 emails were labelled, routed and logged, with 4 threaded reply drafts. The urgent and overdue alerts fired. The weekly report was built from 98 fictional jobs, flagged the 3 planted issues, passed the number check, and was delivered once.
+- **n8n:** 2 more emails were triaged with drafts, a matching weekly report was delivered, and an error alert fired.
+- **Sent folder:** stayed empty throughout.
 
-Coming next: a dashboard and an n8n version.
-
-## Weekly report
-Every Monday at 08:00 (`routing.yaml` → `report`), the running app reports on the previous Monday–Sunday week. All figures are **computed in code** from the *Jobs* tab and the inbox log:
-- jobs completed, revenue against the week before, average job value
-- emails by type, complaints, and the median time to the first reply
-- emails still unanswered past their deadline
-- unpaid overdue invoices, with how many days late
-
-**Issues are flagged by rules you set:**
-- revenue down more than 25%
-- 3 or more complaints
-- an invoice more than 14 days overdue
-- any email past its deadline
-
-**Claude only writes the 3–5 sentence summary.** Every number in it is then checked against the computed figures. If one doesn't match, for example a percentage Claude calculated itself, the summary is replaced by a plain one written in code, and the email says why. Two limits: numbers written as words aren't checked, and a wrong number that happens to equal another figure in the data would pass.
-
-**Delivery:**
-- A row in the *Weekly report* tab.
-- An email **placed in the owner's inbox** with `messages.insert`, so nothing is sent and no send permission is used. It's labelled `AI/Report`, and the pipeline never reads it back in.
-
-Each week is reported once. If delivery fails, the next run finishes only the missing steps.
-
-```bash
-.venv/bin/python -m inbox.google_setup seed-jobs       # demo: ~9 weeks of fictional jobs with planted issues
-.venv/bin/python -m inbox.weekly preview               # last week from sample data, nothing written
-.venv/bin/python -m inbox.weekly preview --live --claude
-.venv/bin/python -m inbox.weekly send --live           # deliver now (once per week)
-```
+**Docs:** [`HANDOVER.md`](HANDOVER.md) covers running, rules, models, keys, privacy and troubleshooting. [`docs/demo-video-script.md`](docs/demo-video-script.md) is a 2-minute walkthrough.
 
 ## Measured accuracy
 30 fictional emails with hand-labelled category, urgency, reply need and key fields (`evals/emails.jsonl`), run on 2026-11-03. They cover:
@@ -108,6 +79,15 @@ Use a Gmail account made for testing, not a personal inbox. The AI reads every e
 - Every Google command checks it's signed in as `INBOX_TEST_ACCOUNT` and refuses any other account.
 - `INBOX_QUERY` limits which emails are read.
 - Sheet rows are written as plain text, so a formula in an email is never run.
+
+## Dashboard
+`python -m inbox.web` runs the dashboard at http://127.0.0.1:8030/dashboard, together with Gmail polling every 2 minutes, hourly follow-ups and the Monday report. It shows:
+- emails that need attention, with a Retry button
+- emails waiting for a reply, urgent first, with the assignee and deadline (overdue in red), any draft warnings and a link to Gmail
+- the latest weekly report
+- every email, filterable by type
+
+Outside demo mode it needs `ADMIN_PASSWORD`. Actions reject cross-site requests, everything is shown as text (never as HTML), and a Content Security Policy blocks framing.
 
 ## Try it
 ```bash

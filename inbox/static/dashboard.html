@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inbox Ops</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#5d6678; --line:#dde1e8; --accent:#2f5bea;
+          --now:#c0392b; --today:#b7791f; --later:#5d6678; --ok:#1f8a4c; --warn-bg:#fff6e5; --err-bg:#fdecec; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171c; --card:#1d2128; --text:#e6e9ef; --muted:#9aa3b2; --line:#2e3440; --accent:#6d8dff;
+            --warn-bg:#3a2f16; --err-bg:#3a1d1d; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  header, main { max-width:1040px; margin:0 auto; padding:0 16px; }
+  header { padding-top:20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:20px; margin:0; flex:1; } h2 { font-size:16px; margin:24px 0 10px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:16px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; }
+  .stat b { display:block; font-size:22px; } .stat span { color:var(--muted); font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .pill { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; font-weight:600; color:#fff; background:var(--later); }
+  .u-now { background:var(--now); } .u-today { background:var(--today); } .cat { background:var(--accent); }
+  .muted { color:var(--muted); font-size:13px; }
+  .quote { color:var(--muted); font-size:13px; font-style:italic; }
+  .warn { background:var(--warn-bg); border-radius:6px; padding:6px 10px; margin-top:8px; font-size:13px; }
+  .err { background:var(--err-bg); border-radius:6px; padding:6px 10px; margin-top:8px; font-size:14px; }
+  .late { color:var(--now); font-weight:600; }
+  button, select { font:inherit; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--text); cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  pre { white-space:pre-wrap; font:13px/1.5 ui-monospace, monospace; background:var(--bg); border-radius:6px; padding:10px; margin:8px 0 0; }
+  .empty { color:var(--muted); font-size:14px; padding:2px 0 8px; }
+  a { color:var(--accent); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td, th { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:500; font-size:13px; }
+  .scroll { overflow-x:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Inbox Ops · <span id="biz" class="muted">Harbor Home Services</span></h1>
+  <span id="status" class="muted" role="status"></span>
+  <button type="button" id="refresh">Refresh</button>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <h2>Needs attention</h2><div id="attention"></div>
+  <h2>Waiting for a reply</h2><div id="waiting"></div>
+  <h2>Weekly report</h2><div id="report" class="card"><span class="muted">Loading…</span></div>
+  <h2>All emails</h2>
+  <div class="row" style="margin-bottom:8px">
+    <label for="filter" class="muted">Type</label>
+    <select id="filter"><option value="">All</option></select>
+  </div>
+  <div class="card scroll"><table><thead><tr><th>Received</th><th>From</th><th>Subject</th><th>Type</th><th>Urgency</th><th>Assigned</th><th>Status</th></tr></thead><tbody id="all"></tbody></table></div>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n[k] = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k !== null && k !== undefined && k !== "") n.append(k);  // text only, never HTML
+  return n;
+}
+const gmailLink = (e) => e.link && /^https:\/\/mail\.google\.com\//.test(e.link)
+  ? el("a", { href: e.link, target: "_blank", rel: "noopener" }, "open in Gmail") : "";
+const urgency = (u) => el("span", { class: "pill u-" + u }, u || "–");
+const TYPES = { new_job: "New job", quote_request: "Quote", complaint: "Complaint", invoice_payment: "Billing",
+                supplier: "Supplier", spam_marketing: "Marketing", other: "Other" };
+for (const [k, v] of Object.entries(TYPES)) $("#filter").append(el("option", { value: k }, v));
+
+function statusOf(e) {
+  if (e.state === "needs_attention") return "needs attention";
+  if (e.state !== "done") return "processing…";
+  if (e.follow_status === "replied") return "replied";
+  if (e.follow_status === "overdue" || e.overdue_now) return "overdue";
+  if (e.follow_status === "open") return "waiting";
+  return "no reply needed";
+}
+
+function attentionCard(e) {
+  const retry = el("button", { class: "primary", type: "button" }, "Retry");
+  retry.onclick = async () => {
+    retry.disabled = true;
+    const r = await fetch(`/api/emails/${e.id}/retry`, { method: "POST" });
+    const d = await r.json().catch(() => ({}));
+    $("#status").textContent = r.ok ? `Retried #${e.id}: ${d.state}` : (d.detail || "Retry failed");
+    load();
+  };
+  return el("div", { class: "card", id: "email-" + e.id },
+    el("div", { class: "row" }, el("strong", {}, e.from), el("span", { class: "muted" }, `${e.subject} · ${e.received}`)),
+    el("div", { class: "err" }, e.error || "Unknown error"),
+    el("div", { class: "row", style: "margin-top:8px" }, retry,
+       el("span", { class: "muted" }, `resumes at: ${e.resume_state || "start"} · attempts: ${e.attempts}`)));
+}
+
+function waitingCard(e) {
+  const late = e.follow_status === "overdue" || e.overdue_now;
+  const card = el("div", { class: "card", id: "email-" + e.id },
+    el("div", { class: "row" }, urgency(e.urgency), el("span", { class: "pill cat" }, e.category_label),
+       el("strong", {}, e.from), el("span", { class: "muted" }, e.received)),
+    el("div", {}, e.summary || e.subject),
+    e.urgency_evidence ? el("div", { class: "quote" }, `“${e.urgency_evidence}”`) : "",
+    el("div", { class: "row muted", style: "margin-top:6px" },
+       el("span", {}, `For ${e.assigned_to || "nobody"} · reply by `), el("span", { class: late ? "late" : "" }, e.reply_by + (late ? " (overdue)" : "")),
+       e.has_draft ? el("span", {}, "· draft saved in Gmail") : "", gmailLink(e)));
+  for (const w of e.draft_warnings) card.append(el("div", { class: "warn" }, "Draft check: " + w));
+  return card;
+}
+
+function fill(id, items, make, none) {
+  $("#" + id).replaceChildren(...(items.length ? items.map(make) : [el("div", { class: "empty" }, none)]));
+}
+
+async function loadReport() {
+  const box = $("#report");
+  const r = await fetch("/api/report");
+  if (!r.ok) { box.replaceChildren(el("span", { class: "muted" }, "Weekly report is not set up.")); return; }
+  const d = await r.json();
+  const label = { delivered: "delivered to the owner's inbox", saved: "built, not yet delivered", preview: "preview, not delivered" }[d.source];
+  box.replaceChildren(el("div", { class: "row" }, el("strong", {}, d.subject), el("span", { class: "muted" }, label)),
+    d.summary_ok ? "" : el("div", { class: "warn" }, "The AI summary was replaced because it contained numbers not in the data."),
+    el("pre", {}, d.text));
+}
+
+async function load() {
+  const r = await fetch("/api/emails");
+  if (!r.ok) { $("#status").textContent = "Could not load emails."; return; }
+  const all = await r.json();
+  const filter = $("#filter").value;
+  const open = all.filter(e => e.state === "done" && ["open", "overdue"].includes(e.follow_status))
+                  .sort((a, b) => (a.urgency === "now" ? -1 : 0) - (b.urgency === "now" ? -1 : 0));
+  const stat = (n, label) => el("div", { class: "stat" }, el("b", {}, String(n)), el("span", {}, label));
+  $("#stats").replaceChildren(
+    stat(all.length, "emails handled"),
+    stat(all.filter(e => e.urgency === "now").length, "urgent"),
+    stat(open.length, "waiting for a reply"),
+    stat(all.filter(e => e.follow_status === "overdue" || e.overdue_now).length, "overdue"),
+    stat(all.filter(e => e.state === "needs_attention").length, "need attention"));
+  fill("attention", all.filter(e => e.state === "needs_attention"), attentionCard, "None.");
+  fill("waiting", open, waitingCard, "Nothing is waiting for a reply.");
+  const rows = all.filter(e => !filter || e.category === filter);
+  $("#all").replaceChildren(...rows.map(e => el("tr", {},
+    el("td", {}, e.received), el("td", {}, e.from), el("td", {}, e.subject), el("td", {}, e.category_label || "–"),
+    el("td", {}, urgency(e.urgency)), el("td", {}, e.assigned_to || "–"), el("td", {}, statusOf(e)))));
+  if (!rows.length) $("#all").append(el("tr", {}, el("td", { colspan: "7", class: "empty" }, "No emails.")));
+}
+$("#refresh").onclick = () => { load(); loadReport(); };
+$("#filter").onchange = load;
+load(); loadReport();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
