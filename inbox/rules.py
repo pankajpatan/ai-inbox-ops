@@ -42,6 +42,36 @@ class Reply(BaseModel):
     phone: str | None = None
 
 
+class ReportIssues(BaseModel):
+    revenue_drop_pct: float = 25
+    complaints_at_least: int = 3
+    invoice_overdue_days: int = 14
+    unanswered_overdue_at_least: int = 1
+
+
+class Report(BaseModel):
+    send_on: str = "monday"
+    send_at: str = "08:00"
+    to: str = "owner"
+    issues: ReportIssues = ReportIssues()
+
+    @field_validator("send_on")
+    @classmethod
+    def weekday(cls, v: str) -> str:
+        days = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+        if v.lower() not in days:
+            raise ValueError(f"send_on must be one of {days}")
+        return v.lower()
+
+    @field_validator("send_at")
+    @classmethod
+    def hhmm(cls, v: str) -> str:
+        h, _, m = v.partition(":")
+        if not (h.isdigit() and m.isdigit() and 0 <= int(h) < 24 and 0 <= int(m) < 60):
+            raise ValueError("send_at must look like 08:00")
+        return v
+
+
 class Rules(BaseModel):
     business: str
     description: str = ""
@@ -53,6 +83,11 @@ class Rules(BaseModel):
     reply: Reply = Reply()
     keywords: dict[str, list[str]] = {}
     urgent_keywords: list[str] = []
+    report: Report = Report()
+
+    def report_recipient(self) -> str:
+        to = self.report.to
+        return self.people[to].email if to in self.people else to
 
     @model_validator(mode="after")
     def check(self) -> "Rules":

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS emails (
     assignee TEXT,
     deadline REAL,
     follow_status TEXT,
+    replied_at REAL,
     classification TEXT,
     classifier TEXT,
     actions TEXT,
@@ -41,6 +42,19 @@ CREATE TABLE IF NOT EXISTS events (
     detail TEXT,
     created_at REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS reports (
+    week_start TEXT PRIMARY KEY,
+    metrics TEXT,
+    issues TEXT,
+    summary TEXT,
+    summary_ok INTEGER,
+    summary_note TEXT,
+    sheet_ref TEXT,
+    message_id TEXT,
+    error TEXT,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_events_email ON events(email_id, id);
 CREATE INDEX IF NOT EXISTS idx_emails_state ON emails(state);
 CREATE INDEX IF NOT EXISTS idx_emails_follow ON emails(follow_status, deadline);
@@ -56,7 +70,7 @@ TRANSITIONS: dict[str, set[str]] = {
 }
 STATES = set(TRANSITIONS)
 JSON_FIELDS = ("classification", "actions", "draft")
-FIELDS = {"category", "urgency", "assignee", "deadline", "follow_status", "classification", "classifier",
+FIELDS = {"category", "urgency", "assignee", "deadline", "follow_status", "replied_at", "classification", "classifier",
           "actions", "draft", "error", "resume_state", "attempts"}
 
 
@@ -87,6 +101,9 @@ class Store:
         self._db.row_factory = sqlite3.Row
         self._db.execute("PRAGMA foreign_keys = ON")
         self._db.executescript(SCHEMA)
+        have = {r["name"] for r in self._db.execute("PRAGMA table_info(emails)")}
+        if "replied_at" not in have:  # databases from milestone 3
+            self._db.execute("ALTER TABLE emails ADD COLUMN replied_at REAL")
         self._db.commit()
 
     def add_email(self, e) -> tuple[int, bool]:
@@ -170,6 +187,42 @@ class Store:
                 "SELECT * FROM emails WHERE state = 'done' AND follow_status IN ('open', 'overdue') "
                 "ORDER BY deadline").fetchall()
         return [_decode(r) for r in rows]
+
+    # ---------- weekly reports ----------
+
+    def report(self, week_start: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._db.execute("SELECT * FROM reports WHERE week_start = ?", (week_start,)).fetchone()
+        if row is None:
+            return None
+        d = dict(row)
+        for k in ("metrics", "issues"):
+            if d.get(k):
+                d[k] = json.loads(d[k])
+        return d
+
+    def save_report(self, week_start: str, **fields: Any) -> None:
+        allowed = {"metrics", "issues", "summary", "summary_ok", "summary_note", "sheet_ref", "message_id", "error"}
+        unknown = set(fields) - allowed
+        if unknown:
+            raise ValueError(f"Unknown report fields: {sorted(unknown)}")
+        fields = {k: json.dumps(v) if k in ("metrics", "issues") and v is not None else v for k, v in fields.items()}
+        now = time.time()
+        with self._lock:
+            self._db.execute("INSERT OR IGNORE INTO reports (week_start, created_at, updated_at) VALUES (?, ?, ?)",
+                             (week_start, now, now))
+            if fields:
+                sets = ", ".join(f"{k} = ?" for k in fields)
+                self._db.execute(f"UPDATE reports SET {sets}, updated_at = ? WHERE week_start = ?",
+                                 (*fields.values(), now, week_start))
+            self._db.commit()
+
+    def all_emails_for_report(self) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT received_at, category, follow_status, replied_at, from_name, from_email, subject "
+                "FROM emails WHERE state = 'done'").fetchall()
+        return [dict(r) for r in rows]
 
     def events(self, email_id: int) -> list[dict[str, Any]]:
         with self._lock:

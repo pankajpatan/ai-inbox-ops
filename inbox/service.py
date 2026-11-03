@@ -224,10 +224,10 @@ class Pipeline:
         counts = {"replied": 0, "overdue": 0, "open": 0}
         for row in self.store.open_follow_ups():
             try:
-                replied = self.mailbox.replied_since(row["thread_id"], row["received_at"])
-                if replied:
+                replied_at = self.mailbox.first_reply_after(row["thread_id"], row["received_at"])
+                if replied_at is not None:
                     self.sheet.update_status(row["actions"]["sheet_ref"], "replied")
-                    self.store.update(row["id"], follow_status="replied")
+                    self.store.update(row["id"], follow_status="replied", replied_at=replied_at)
                     self.store.log(row["id"], "replied")
                     counts["replied"] += 1
                 elif row["follow_status"] == "overdue":

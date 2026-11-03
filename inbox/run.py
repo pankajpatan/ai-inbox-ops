@@ -9,6 +9,7 @@ Needs: the Google login (python -m inbox.google_setup login), SHEET_ID and INBOX
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import logging
 import os
 import sys
@@ -63,6 +64,15 @@ def main() -> None:
     args = p.parse_args()
 
     pipeline = build()
+    reporter = None
+    try:
+        from .weekly import live_reporter
+        from .report import ClaudeSummary, due_week
+        key = os.getenv("ANTHROPIC_API_KEY")
+        reporter = live_reporter(pipeline.rules, ClaudeSummary(key, os.getenv("INBOX_MODEL", "claude-opus-5-5"))
+                                 if key else None)
+    except SystemExit as exc:
+        log.warning("weekly report disabled: %s", exc)
     resumed = pipeline.resume_pending()
     if resumed:
         log.info("resumed %s unfinished emails", len(resumed))
@@ -77,6 +87,15 @@ def main() -> None:
                 last_follow_up = time.time()
         except Exception:  # e.g. Gmail unreachable: log it and try again next round
             log.exception("poll failed; will retry")
+        if reporter is not None:
+            try:
+                week = due_week(dt.datetime.now(pipeline.tz), pipeline.rules)
+                done = week and (reporter.store.report(week.isoformat()) or {}).get("message_id")
+                if week and not done:
+                    r = reporter.run(week)
+                    log.info("weekly report %s: delivered=%s error=%s", week, bool(r["message_id"]), r["error"])
+            except Exception:
+                log.exception("weekly report failed; will retry")
         if args.once:
             return
         time.sleep(args.poll_seconds)

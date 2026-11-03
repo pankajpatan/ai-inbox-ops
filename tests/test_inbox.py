@@ -405,9 +405,9 @@ def test_follow_up_survives_a_bad_thread(tmp_path):
     def flaky(thread_id, since):
         if thread_id == "t2":
             raise AdapterError("Gmail hiccup")
-        return False
+        return None
 
-    p.mailbox.replied_since = flaky
+    p.mailbox.first_reply_after = flaky
     assert p.follow_up() == {"replied": 0, "overdue": 1, "open": 0}
 
 

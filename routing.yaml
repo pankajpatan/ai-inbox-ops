@@ -24,6 +24,7 @@ people:
   office: {name: Office team, email: office@harbor.example}
   manager: {name: Dana (manager), email: dana@harbor.example}
   accounts: {name: Accounts, email: accounts@harbor.example}
+  owner: {name: Owner, email: owner@harbor.example}
 
 # First matching rule wins. "urgency" and "category" can be one value or a list.
 rules:
@@ -55,3 +56,15 @@ keywords:
             leaking, broken, not working, stopped working]
 urgent_keywords: [flooding, water everywhere, water is coming through, coming through the ceiling, burst, gas smell,
                   smell gas, sparks, burning smell, no heat, locked out, emergency]
+
+# Weekly report: numbers are computed in code; the AI only writes the short summary,
+# and every number in that summary is checked against the computed figures.
+report:
+  send_on: monday          # report for the previous Monday-Sunday week
+  send_at: "08:00"         # local time (timezone above)
+  to: owner                # a person from "people", or an email address
+  issues:
+    revenue_drop_pct: 25   # revenue down more than this vs the week before
+    complaints_at_least: 3
+    invoice_overdue_days: 14
+    unanswered_overdue_at_least: 1

@@ -27,10 +27,10 @@ CLIENT_FILE = CREDENTIALS_DIR / "client_secret.json"
 TOKEN_FILE = CREDENTIALS_DIR / "token.json"
 PROCESSED_LABEL = "AI/Processed"
 DEMO_LABEL = "Demo"
+REPORT_LABEL = "AI/Report"
 DEFAULT_QUERY = "in:inbox -from:me newer_than:14d"
 LOG_COLUMNS = ["received", "from", "subject", "category", "urgency", "assigned_to", "reply_by", "summary",
                "phone", "draft", "status", "link"]
-STATUS_COLUMN = chr(ord("A") + LOG_COLUMNS.index("status"))
 
 
 def load_credentials(interactive: bool = False):
@@ -107,7 +107,8 @@ class GmailMailbox:
 
     def __init__(self, service, query: str = DEFAULT_QUERY, max_results: int = 50):
         self.svc = service
-        self.query = f"{query} -label:{PROCESSED_LABEL.replace('/', '-')}"
+        # never pick up our own processed mail or the weekly report we placed in the inbox
+        self.query = f"{query} -label:{PROCESSED_LABEL.replace('/', '-')} -label:{REPORT_LABEL.replace('/', '-')}"
         self.max_results = max_results
         self._labels: dict[str, str] | None = None
 
@@ -163,10 +164,12 @@ class GmailMailbox:
     def mark_processed(self, message_id: str) -> None:
         self.add_labels(message_id, [PROCESSED_LABEL])
 
-    def replied_since(self, thread_id: str, since: float) -> bool:
+    def first_reply_after(self, thread_id: str, since: float) -> float | None:
         t = _run(self.svc.users().threads().get(userId="me", id=thread_id, format="minimal"), "get thread")
-        return any("SENT" in m.get("labelIds", []) and int(m.get("internalDate", "0")) / 1000 > since
-                   for m in t.get("messages", []))
+        times = [int(m.get("internalDate", "0")) / 1000 for m in t.get("messages", [])
+                 if "SENT" in m.get("labelIds", [])]
+        later = [x for x in times if x > since]
+        return min(later) if later else None
 
     def insert_test_email(self, from_name: str, from_email: str, subject: str, body: str, date_header: str) -> str:
         """Put a fictional email straight into this inbox, as if received, labelled DEMO_LABEL so the
@@ -185,12 +188,15 @@ class GmailMailbox:
 
 
 class GoogleSheet:
+    """One tab of the demo spreadsheet: the inbox log (default) or the weekly report."""
+
     name = "google_sheets"
 
-    def __init__(self, service, spreadsheet_id: str, tab: str = "Inbox log"):
+    def __init__(self, service, spreadsheet_id: str, tab: str = "Inbox log", columns: list[str] | None = None):
         self.svc = service.spreadsheets()
         self.id = spreadsheet_id
         self.tab = tab
+        self.columns = columns or LOG_COLUMNS
 
     @classmethod
     def create(cls, service, title: str, tab: str = "Inbox log") -> "GoogleSheet":
@@ -198,13 +204,25 @@ class GoogleSheet:
             "frozenRowCount": 1}}}]}
         res = _run(service.spreadsheets().create(body=body, fields="spreadsheetId"), "create spreadsheet")
         sheet = cls(service, res["spreadsheetId"], tab)
-        _run(sheet.svc.values().update(spreadsheetId=sheet.id, range=f"'{tab}'!A1", valueInputOption="RAW",
-                                       body={"values": [[c.replace("_", " ").title() for c in LOG_COLUMNS]]}),
-             "write header")
+        sheet._write_header()
         return sheet
 
+    def _write_header(self) -> None:
+        _run(self.svc.values().update(spreadsheetId=self.id, range=f"'{self.tab}'!A1", valueInputOption="RAW",
+                                      body={"values": [[c.replace("_", " ").capitalize() for c in self.columns]]}),
+             "write header")
+
+    def ensure_tab(self) -> "GoogleSheet":
+        """Add this tab (with a header row) to the spreadsheet if it isn't there yet."""
+        meta = _run(self.svc.get(spreadsheetId=self.id, fields="sheets.properties.title"), "read tabs")
+        if self.tab not in {s["properties"]["title"] for s in meta.get("sheets", [])}:
+            req = {"addSheet": {"properties": {"title": self.tab, "gridProperties": {"frozenRowCount": 1}}}}
+            _run(self.svc.batchUpdate(spreadsheetId=self.id, body={"requests": [req]}), "add tab")
+            self._write_header()
+        return self
+
     def append(self, row: dict) -> str:
-        values = [[str(row.get(c, "") or "") for c in LOG_COLUMNS]]
+        values = [[str(row.get(c, "") if row.get(c) is not None else "") for c in self.columns]]
         # RAW: text from emails is stored as text, never run as a formula
         res = _run(self.svc.values().append(spreadsheetId=self.id, range=f"'{self.tab}'!A1",
                                             valueInputOption="RAW", insertDataOption="INSERT_ROWS",
@@ -213,12 +231,73 @@ class GoogleSheet:
         return re.search(r"![A-Z]+(\d+)", updated).group(1)
 
     def update_status(self, ref: str, status: str) -> None:
-        _run(self.svc.values().update(spreadsheetId=self.id, range=f"'{self.tab}'!{STATUS_COLUMN}{ref}",
+        column = chr(ord("A") + self.columns.index("status"))
+        _run(self.svc.values().update(spreadsheetId=self.id, range=f"'{self.tab}'!{column}{ref}",
                                       valueInputOption="RAW", body={"values": [[status]]}), "update status")
+
+    def rows(self) -> list[dict]:
+        """All data rows as dicts keyed by this tab's columns."""
+        res = _run(self.svc.values().get(spreadsheetId=self.id, range=f"'{self.tab}'!A2:Z"), "read rows")
+        return [dict(zip(self.columns, r + [""] * (len(self.columns) - len(r)))) for r in res.get("values", [])]
+
+    def write_rows(self, rows: list[dict]) -> None:
+        values = [[str(r.get(c, "")) for c in self.columns] for r in rows]
+        _run(self.svc.values().update(spreadsheetId=self.id, range=f"'{self.tab}'!A2", valueInputOption="RAW",
+                                      body={"values": values}), "write rows")
 
     @property
     def url(self) -> str:
         return f"https://docs.google.com/spreadsheets/d/{self.id}"
+
+
+JOB_COLUMNS = ["date", "customer", "job_type", "status", "amount", "invoice_number", "invoice_status", "due_date"]
+
+
+class GoogleJobs:
+    """Reads the "Jobs" tab. Bad rows are skipped and logged, never guessed."""
+
+    name = "google_sheets"
+
+    def __init__(self, service, spreadsheet_id: str, tab: str = "Jobs"):
+        self.sheet = GoogleSheet(service, spreadsheet_id, tab, JOB_COLUMNS)
+
+    def jobs(self):
+        from .report import Job
+        out = []
+        for i, r in enumerate(self.sheet.rows(), start=2):
+            try:
+                out.append(Job(date=r["date"], customer=r["customer"], job_type=r["job_type"],
+                               status=r["status"].strip().lower(),
+                               amount=float(str(r["amount"]).replace("$", "").replace(",", "") or 0),
+                               invoice_number=r["invoice_number"], invoice_status=r["invoice_status"].strip().lower(),
+                               due_date=r["due_date"] or None))
+            except Exception as exc:
+                log.warning("Jobs row %s skipped: %s", i, str(exc).splitlines()[0])
+        return out
+
+
+class GmailReportSink:
+    """Places the report in the owner's inbox (messages.insert). Nothing is sent."""
+
+    name = "gmail_inbox"
+
+    def __init__(self, mailbox: GmailMailbox, from_name: str = "AI Inbox Ops", from_email: str = "reports@inbox-ops.local"):
+        self.mailbox, self.from_name, self.from_email = mailbox, from_name, from_email
+
+    def deliver(self, to: str, subject: str, text: str, html: str) -> str:
+        from email.utils import formatdate
+        msg = EmailMessage()
+        msg["From"] = formataddr((self.from_name, self.from_email))
+        msg["To"] = to
+        msg["Subject"] = " ".join(subject.split())
+        msg["Date"] = formatdate(localtime=True)
+        msg.set_content(text)
+        msg.add_alternative(html, subtype="html")
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        labels = ["INBOX", "UNREAD", *self.mailbox._label_ids([REPORT_LABEL])]
+        res = _run(self.mailbox.svc.users().messages().insert(
+            userId="me", internalDateSource="dateHeader", body={"raw": raw, "labelIds": labels}), "insert report")
+        return res["id"]
 
 
 def services(creds) -> tuple[Any, Any]:

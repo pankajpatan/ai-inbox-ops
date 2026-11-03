@@ -28,8 +28,8 @@ class Mailbox(Protocol):
 
     def mark_processed(self, message_id: str) -> None: ...
 
-    def replied_since(self, thread_id: str, since: float) -> bool:
-        """True if someone at the business replied in this thread after `since`."""
+    def first_reply_after(self, thread_id: str, since: float) -> float | None:
+        """Time of the business's first reply in this thread after `since`, or None."""
 
 
 class LogSheet(Protocol):
@@ -75,8 +75,9 @@ class FakeMailbox:
         self._maybe_fail("processed")
         self.processed.add(message_id)
 
-    def replied_since(self, thread_id: str, since: float) -> bool:
-        return self.replies.get(thread_id, 0) > since
+    def first_reply_after(self, thread_id: str, since: float) -> float | None:
+        t = self.replies.get(thread_id)
+        return t if t is not None and t > since else None
 
 
 @dataclass

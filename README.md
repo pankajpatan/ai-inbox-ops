@@ -5,14 +5,44 @@ Sorts a service business's inbox: each email gets a category and an urgency (bac
 The sample business, Harbor Home Services (home repairs), is fictional. Its rules are in `routing.yaml`.
 
 ## Status
-Milestones 1 to 3 of 5 are done: rules, checks, classifiers, routing, drafts, the pipeline with retries, follow-ups, a measured accuracy eval, and real Gmail and Google Sheets connections.
+Milestones 1 to 4 of 5 are done: inbox sorting with a measured eval, real Gmail and Google Sheets connections, and the weekly report.
 
 Tested live on 2026-11-03 against a demo Gmail account:
 - 7 fictional emails were labelled, routed and logged to a Google Sheet.
 - 4 threaded reply drafts were created, and the urgent and overdue alerts fired.
+- A weekly report was built from 98 fictional jobs and the inbox log. It flagged the 3 planted issues, and Claude's summary passed the number check.
+- The report was placed in the owner's inbox and added to the sheet, and running it again changed nothing.
 - The Sent folder stayed empty.
 
-Coming next: the weekly report, a dashboard and an n8n version.
+Coming next: a dashboard and an n8n version.
+
+## Weekly report
+Every Monday at 08:00 (`routing.yaml` → `report`), the running app reports on the previous Monday–Sunday week. All figures are **computed in code** from the *Jobs* tab and the inbox log:
+- jobs completed, revenue against the week before, average job value
+- emails by type, complaints, and the median time to the first reply
+- emails still unanswered past their deadline
+- unpaid overdue invoices, with how many days late
+
+**Issues are flagged by rules you set:**
+- revenue down more than 25%
+- 3 or more complaints
+- an invoice more than 14 days overdue
+- any email past its deadline
+
+**Claude only writes the 3–5 sentence summary.** Every number in it is then checked against the computed figures. If one doesn't match, for example a percentage Claude calculated itself, the summary is replaced by a plain one written in code, and the email says why. Two limits: numbers written as words aren't checked, and a wrong number that happens to equal another figure in the data would pass.
+
+**Delivery:**
+- A row in the *Weekly report* tab.
+- An email **placed in the owner's inbox** with `messages.insert`, so nothing is sent and no send permission is used. It's labelled `AI/Report`, and the pipeline never reads it back in.
+
+Each week is reported once. If delivery fails, the next run finishes only the missing steps.
+
+```bash
+.venv/bin/python -m inbox.google_setup seed-jobs       # demo: ~9 weeks of fictional jobs with planted issues
+.venv/bin/python -m inbox.weekly preview               # last week from sample data, nothing written
+.venv/bin/python -m inbox.weekly preview --live --claude
+.venv/bin/python -m inbox.weekly send --live           # deliver now (once per week)
+```
 
 ## Measured accuracy
 30 fictional emails with hand-labelled category, urgency, reply need and key fields (`evals/emails.jsonl`), run on 2026-11-03. They cover:

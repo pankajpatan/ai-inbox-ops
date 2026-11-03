@@ -87,7 +87,7 @@ def test_fetch_parses_headers_body_and_skips_processed():
     assert e.body == "We paid INV-2291.\n\nThanks" and e.received_at == 1_793_700_000
     assert e.link.endswith("#all/m9")
     q = next(kw for name, kw in fake.calls if name == "users.messages.list")["q"]
-    assert q == "label:Demo -label:AI-Processed"
+    assert q == "label:Demo -label:AI-Processed -label:AI-Report"
 
 
 def test_html_only_body_is_stripped():
@@ -119,8 +119,8 @@ def test_draft_is_a_threaded_reply_and_not_sent():
 
 def test_reply_detection_uses_sent_messages_after_the_email():
     _, mb = gmail()
-    assert mb.replied_since("t9", 1_793_700_000) is True
-    assert mb.replied_since("t9", 1_793_703_600) is False
+    assert mb.first_reply_after("t9", 1_793_700_000) == 1_793_703_600
+    assert mb.first_reply_after("t9", 1_793_703_600) is None
 
 
 def test_seeded_emails_get_the_demo_label_and_quoted_sender():
@@ -167,3 +167,30 @@ def test_code_never_calls_a_gmail_send_method():
     tree = ast.parse((ROOT / "inbox" / "google_api.py").read_text())
     sends = [n for n in ast.walk(tree) if isinstance(n, ast.Attribute) and n.attr == "send"]
     assert sends == []
+
+
+def test_jobs_tab_is_read_and_bad_rows_skipped():
+    from inbox.google_api import GoogleJobs
+    rows = [["2026-10-27", "Maria Lopez", "Plumbing repair", "Completed", "$1,250", "INV-1", "paid", "2026-11-10"],
+            ["not a date", "Bad Row", "x", "completed", "10", "", "", ""],
+            ["2026-10-28", "Tom", "Handyman", "scheduled", "", "", "", ""],
+            ["2026-10-29", "Odd", "x", "done-ish", "5", "", "", ""]]
+    fake = FakeGoogle(spreadsheets__values__get=lambda kw: (({"values": rows}),))
+    jobs = GoogleJobs(fake.root(), "sid").jobs()
+    assert [(j.customer, j.status, j.amount) for j in jobs] == [("Maria Lopez", "completed", 1250.0),
+                                                               ("Tom", "scheduled", 0.0)]
+    assert jobs[0].due_date.isoformat() == "2026-11-10"
+
+
+def test_ensure_tab_adds_a_missing_tab_once():
+    added = []
+    leaves = {
+        "spreadsheets__get": lambda kw: (({"sheets": [{"properties": {"title": "Inbox log"}}]}),),
+        "spreadsheets__batchUpdate": lambda kw: (added.append(kw) or {},),
+        "spreadsheets__values__update": lambda kw: (added.append(kw) or {},),
+    }
+    GoogleSheet(FakeGoogle(**leaves).root(), "sid", "Weekly report", ["week", "revenue"]).ensure_tab()
+    assert added[0]["body"]["requests"][0]["addSheet"]["properties"]["title"] == "Weekly report"
+    assert added[1]["body"] == {"values": [["Week", "Revenue"]]}
+    GoogleSheet(FakeGoogle(**leaves).root(), "sid", "Inbox log").ensure_tab()
+    assert len(added) == 2                                         # existing tab: nothing added
