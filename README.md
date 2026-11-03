@@ -5,9 +5,33 @@ Sorts a service business's inbox: each email gets a category and an urgency (bac
 The sample business, Harbor Home Services (home repairs), is fictional. Its rules are in `routing.yaml`.
 
 ## Status
-Milestone 1 of 5 is done: rules, checks, classifiers, routing, drafts, the pipeline with retries, follow-ups and tests. It runs against an in-memory mailbox and sheet.
+Milestones 1 and 2 of 5 are done: rules, checks, classifiers, routing, drafts, the pipeline with retries, follow-ups, tests and a measured accuracy eval. It runs against an in-memory mailbox and sheet.
 
-Coming next: the accuracy eval, the real Gmail and Google Sheets connections, the weekly report, a dashboard and an n8n version.
+Coming next: the real Gmail and Google Sheets connections, the weekly report, a dashboard and an n8n version.
+
+## Measured accuracy
+30 fictional emails with hand-labelled category, urgency, reply need and key fields (`evals/emails.jsonl`), run on 2026-11-03. They cover:
+- emergencies written calmly, in lowercase, in Spanish and forwarded from a tenant
+- an angry email about an old bill, which is a complaint but not an emergency
+- lead-selling spam dressed up as urgent jobs, an out-of-office auto-reply and a prompt-injection attempt
+- a job applicant, a reschedule and supplier mail
+
+| Classifier | Category | Urgency | Emergencies caught | Urgency too low | Reply needed | Fields extracted | Cost per email |
+|---|---|---|---|---|---|---|---|
+| Claude Opus 5.5 (effort low) | 30/30 | 29/30 | **8/8** | 0 | 30/30 | 10/10 | $0.0104 |
+| Claude Sonnet 5.5 (effort low) | 30/30 | 27/30 | 7/8 | 1 | 30/30 | 10/10 | $0.0053 |
+| Claude Haiku 5.5 (effort low) | 30/30 | 26/30 | 8/8 | 1 | 30/30 | 10/10 | $0.0003 |
+| Keyword rules (no API key) | 17/30 | 19/30 | 4/8 | 9 | 25/30 | 10/10 | free |
+
+- **"Urgency too low" is the number that matters most.** It means a customer waits longer than they should.
+  - Opus never did it.
+  - Sonnet rated the forwarded no-heat email from a tenant as "today" instead of "now".
+  - Haiku caught every emergency but rated a reschedule too low.
+  - The other misses are urgency rated too *high*, which costs an earlier reply, not a missed emergency. Example: a neutral refund question marked "today".
+- **Results are from the first run.** No prompt was changed after seeing them. Still, 30 cases is a small set: treat the numbers as indicative.
+- **The keyword rules are only a fallback.** They missed half the emergencies, including the calm gas smell and the Spanish leak.
+
+Reproduce with `.venv/bin/python -m inbox.eval --classifier claude --model claude-opus-5-5` (about $0.31 per run). Saved results are in `evals/results/`.
 
 ## How it works
 1. **Fetch** new mail. Each message is stored once by its ID, so polling twice never handles an email twice.

@@ -1,0 +1,656 @@
+{
+  "summary": {
+    "classifier": "keywords",
+    "cases": 30,
+    "errors": 0,
+    "category_correct": "17/30",
+    "urgency_correct": "19/30",
+    "emergencies_caught": "4/8",
+    "urgency_under_called": 9,
+    "urgency_over_called": 2,
+    "needs_reply_correct": "25/30",
+    "fields_extracted": "10/10",
+    "answers_corrected_by_checks": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "avg_seconds": 0.0
+  },
+  "results": [
+    {
+      "id": "ceiling-leak",
+      "note": "active leak",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-201-3344"
+      },
+      "corrections": [],
+      "summary": "Water coming through kitchen ceiling!!",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "calm-gas",
+      "note": "calm tone, real danger",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Probably nothing",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "sparks",
+      "note": "sparks, lowercase",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "outlet",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "no-heat-freezing",
+      "note": "no heat in freezing weather",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Furnace died",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "office-overflow",
+      "note": "commercial emergency",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Toilet overflowing in our office",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "spanish-leak",
+      "note": "Spanish",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-330-1188"
+      },
+      "corrections": [],
+      "summary": "Fuga urgente",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "forwarded-tenant",
+      "note": "forwarded, landlord writing",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Fwd: heater broken",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "outlet-this-week",
+      "note": "job wanted this week",
+      "expected": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Outlet not working",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "hot-water-quote",
+      "note": "no hot water is not danger",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Water heater replacement quote",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "smoke-chirp",
+      "note": "annoying, not urgent",
+      "expected": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Smoke alarm chirping",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "fan-estimate",
+      "note": "plain quote",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Quote for new bathroom fan",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "remodel-spring",
+      "note": "big future job",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Kitchen remodel next spring",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "reschedule",
+      "note": "change to a booking this week",
+      "expected": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Can we move Thursday?",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "complaint-calm",
+      "note": "polite but unhappy",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "amount": true
+      },
+      "fields_got": {
+        "amount": "$380"
+      },
+      "corrections": [],
+      "summary": "Still not fixed",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "complaint-angry-bill",
+      "note": "angry about an old bill: complaint, not an emergency",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true,
+        "amount": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2207",
+        "amount": "$260"
+      },
+      "corrections": [],
+      "summary": "RIDICULOUS charge",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "complaint-rude-tech",
+      "note": "staff complaint",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Your technician",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "paid-invoice",
+      "note": "receipt request",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true,
+        "amount": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2291",
+        "amount": "$640.00"
+      },
+      "corrections": [],
+      "summary": "Invoice INV-2291",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "card-declined",
+      "note": "payment problem today",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2310"
+      },
+      "corrections": [],
+      "summary": "Payment link not working",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "refund-question",
+      "note": "neutral refund question",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "amount": true
+      },
+      "fields_got": {
+        "amount": "$75"
+      },
+      "corrections": [],
+      "summary": "Refund for cancelled visit",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "supplier-shipment",
+      "note": "notification, no reply",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Your order #88412 shipment",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "supplier-price-list",
+      "note": "supplier update",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "New price list from 1 December",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "supplier-delay",
+      "note": "supplier needs an answer, but not today",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Delay on PO 5531",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "seo-pitch",
+      "note": "pitch",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Get 50 new plumbing leads a month",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "disguised-leads",
+      "note": "lead-selling dressed up as urgent jobs",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "20 homeowners need a plumber in your area",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "newsletter",
+      "note": "newsletter",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "This week in home services",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "out-of-office",
+      "note": "auto-reply needs no action",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Automatic reply: Your appointment",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "thanks-only",
+      "note": "nothing to do",
+      "expected": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Re: Visit confirmed",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "injection",
+      "note": "prompt injection",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Quote",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "job-applicant",
+      "note": "not a customer, still needs a reply",
+      "expected": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Apprentice electrician looking for work",
+      "meta": {},
+      "seconds": 0.0
+    },
+    {
+      "id": "locked-out",
+      "note": "locked out",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-414-9090"
+      },
+      "corrections": [],
+      "summary": "Locked out",
+      "meta": {},
+      "seconds": 0.0
+    }
+  ]
+}

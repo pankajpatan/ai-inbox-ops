@@ -46,8 +46,13 @@ def check(c: Classification, email: Email) -> Checked:
         value = getattr(x, field)
         if value is None:
             continue
-        found = (len(digits(value)) >= 3 and digits(value) in raw_digits) if field != "invoice_number" \
-            else norm(value) in text or (len(digits(value)) >= 3 and digits(value) in raw_digits)
+        if field == "phone":  # formatting may differ: compare the digits
+            found = len(digits(value)) >= 7 and digits(value) in raw_digits
+        elif field == "amount":  # the number itself must appear, not just its digits inside another number
+            number = re.sub(r"[^\d.,]", "", value).strip(".,")
+            found = bool(number) and re.search(rf"(?<![\d.,]){re.escape(number)}(?![\d])", email.text) is not None
+        else:
+            found = norm(value) in text or (len(digits(value)) >= 3 and digits(value) in raw_digits)
         if not found:
             corrections.append(f"{field} '{value}' is not in the email; removed")
             setattr(x, field, None)

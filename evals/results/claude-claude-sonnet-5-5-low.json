@@ -1,0 +1,838 @@
+{
+  "summary": {
+    "classifier": "claude:claude-sonnet-5-5",
+    "cases": 30,
+    "errors": 0,
+    "category_correct": "30/30",
+    "urgency_correct": "27/30",
+    "emergencies_caught": "7/8",
+    "urgency_under_called": 1,
+    "urgency_over_called": 2,
+    "needs_reply_correct": "30/30",
+    "fields_extracted": "10/10",
+    "answers_corrected_by_checks": 0,
+    "input_tokens": 55161,
+    "output_tokens": 4897,
+    "avg_seconds": 2.26,
+    "cost_usd_total": 0.1593,
+    "cost_usd_per_email": 0.00531
+  },
+  "results": [
+    {
+      "id": "ceiling-leak",
+      "note": "active leak",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-201-3344"
+      },
+      "corrections": [],
+      "summary": "Maria Lopez reports water coming through their kitchen ceiling from the upstairs bathroom, getting worse, and wants a technician sent today.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoD2eeinBKEHn6pLXMd",
+        "input_tokens": 1863,
+        "output_tokens": 207,
+        "seconds": 3.48
+      },
+      "seconds": 3.48
+    },
+    {
+      "id": "calm-gas",
+      "note": "calm tone, real danger",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Ruth Adams reports a faint gas smell near their stove since this morning and wants someone to come take a look.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoD2f9f86kaMmZEpv7F",
+        "input_tokens": 1841,
+        "output_tokens": 156,
+        "seconds": 2.58
+      },
+      "seconds": 2.58
+    },
+    {
+      "id": "sparks",
+      "note": "sparks, lowercase",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Ken Moore reports an outlet behind the fridge popped and sparked, says the breaker is off, and asks what to do.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoD2f9Xb5NGi5e3Au9z",
+        "input_tokens": 1817,
+        "output_tokens": 167,
+        "seconds": 2.57
+      },
+      "seconds": 2.57
+    },
+    {
+      "id": "no-heat-freezing",
+      "note": "no heat in freezing weather",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Linda Park's furnace stopped working overnight in 18°F weather with a newborn at home, and they want a technician sent as soon as possible.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoD2dAeUMcWT2y6MwHR",
+        "input_tokens": 1841,
+        "output_tokens": 172,
+        "seconds": 2.55
+      },
+      "seconds": 2.55
+    },
+    {
+      "id": "office-overflow",
+      "note": "commercial emergency",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "The Lakeside Dental front desk wants a plumber sent right now because the staff toilet is overflowing onto the waiting room floor.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDCzVyTeaNG3qmijZ1",
+        "input_tokens": 1841,
+        "output_tokens": 179,
+        "seconds": 2.5
+      },
+      "seconds": 2.5
+    },
+    {
+      "id": "spanish-leak",
+      "note": "Spanish",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-330-1188"
+      },
+      "corrections": [],
+      "summary": "Carmen Ruiz reports water coming through the bathroom ceiling that they cannot shut off and wants someone sent today.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDCyzkE1L4kJBMJNzv",
+        "input_tokens": 1858,
+        "output_tokens": 184,
+        "seconds": 2.05
+      },
+      "seconds": 2.06
+    },
+    {
+      "id": "forwarded-tenant",
+      "note": "forwarded, landlord writing",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Paul Grant asks for a technician to visit their tenant Jess at 9 Pine Court because the heater is broken.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDD2UeZKvwBRmYMHh4",
+        "input_tokens": 1874,
+        "output_tokens": 448,
+        "seconds": 4.1
+      },
+      "seconds": 4.1
+    },
+    {
+      "id": "outlet-this-week",
+      "note": "job wanted this week",
+      "expected": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Greg wants a technician booked this week to look at a living room outlet that stopped working.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDGmD6cpcxnxjX2u9i",
+        "input_tokens": 1830,
+        "output_tokens": 139,
+        "seconds": 1.88
+      },
+      "seconds": 1.88
+    },
+    {
+      "id": "hot-water-quote",
+      "note": "no hot water is not danger",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Sanjay Rao wants a price for replacing a dead water heater and asks how soon it could be done.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDMpZpkC2tCxwQa3pm",
+        "input_tokens": 1830,
+        "output_tokens": 153,
+        "seconds": 2.7
+      },
+      "seconds": 2.7
+    },
+    {
+      "id": "smoke-chirp",
+      "note": "annoying, not urgent",
+      "expected": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Ben Ortiz wants a technician sent sometime next week to check the wiring on a hard-wired smoke alarm that keeps chirping even after a battery change.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDPdDVmrQu34HSrkci",
+        "input_tokens": 1845,
+        "output_tokens": 173,
+        "seconds": 2.48
+      },
+      "seconds": 2.48
+    },
+    {
+      "id": "fan-estimate",
+      "note": "plain quote",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Tom Becker wants an estimate to replace the extractor fan in their bathroom, with no rush and sometime next month being fine.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDQurkN9cHE2m1jE2u",
+        "input_tokens": 1835,
+        "output_tokens": 149,
+        "seconds": 2.7
+      },
+      "seconds": 2.7
+    },
+    {
+      "id": "remodel-spring",
+      "note": "big future job",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Alice Wong wants a rough estimate of plumbing and electrical costs for a kitchen remodel planned for next spring and offers to send drawings.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDWWDH7bYQjdmbrYHc",
+        "input_tokens": 1838,
+        "output_tokens": 160,
+        "seconds": 2.5
+      },
+      "seconds": 2.5
+    },
+    {
+      "id": "reschedule",
+      "note": "change to a booking this week",
+      "expected": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Omar Haddad asks to move the Thursday 10 o'clock dishwasher drain repair appointment to Friday.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDZLcB8iWyxb1rHmXs",
+        "input_tokens": 1840,
+        "output_tokens": 160,
+        "seconds": 2.0
+      },
+      "seconds": 2.0
+    },
+    {
+      "id": "complaint-calm",
+      "note": "polite but unhappy",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "amount": true
+      },
+      "fields_got": {
+        "amount": "$380"
+      },
+      "corrections": [],
+      "summary": "Priya Nair says the boiler stopped working again after Tuesday's paid repair visit and asks for a call back.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDaHRCfHjboee344Ja",
+        "input_tokens": 1841,
+        "output_tokens": 148,
+        "seconds": 2.0
+      },
+      "seconds": 2.0
+    },
+    {
+      "id": "complaint-angry-bill",
+      "note": "angry about an old bill: complaint, not an emergency",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true,
+        "amount": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2207",
+        "amount": "$260"
+      },
+      "corrections": [],
+      "summary": "Frank Miller is unhappy about a $260 charge for a 20 minute visit and wants someone to explain the bill on invoice INV-2207.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDcRQ6GCU1Ei74rS7P",
+        "input_tokens": 1842,
+        "output_tokens": 160,
+        "seconds": 2.15
+      },
+      "seconds": 2.15
+    },
+    {
+      "id": "complaint-rude-tech",
+      "note": "staff complaint",
+      "expected": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "complaint",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Helen Shaw complains that the technician who visited yesterday was rude to their mother and left mud in the hallway.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDhBPt6GohpAPDy2r2",
+        "input_tokens": 1826,
+        "output_tokens": 149,
+        "seconds": 2.06
+      },
+      "seconds": 2.06
+    },
+    {
+      "id": "paid-invoice",
+      "note": "receipt request",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true,
+        "amount": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2291",
+        "amount": "$640.00"
+      },
+      "corrections": [],
+      "summary": "Riverside Cafe says they paid invoice INV-2291 ($640.00) by bank transfer today and asks for a receipt.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDhwYLFxsJsVGrXaXu",
+        "input_tokens": 1838,
+        "output_tokens": 154,
+        "seconds": 1.89
+      },
+      "seconds": 1.89
+    },
+    {
+      "id": "card-declined",
+      "note": "payment problem today",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "invoice_number": true
+      },
+      "fields_got": {
+        "invoice_number": "INV-2310"
+      },
+      "corrections": [],
+      "summary": "Nina Brooks cannot pay invoice INV-2310 because the payment page keeps declining their card, and the invoice is due tomorrow.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDis6wxJG67D2VwANH",
+        "input_tokens": 1844,
+        "output_tokens": 163,
+        "seconds": 2.18
+      },
+      "seconds": 2.18
+    },
+    {
+      "id": "refund-question",
+      "note": "neutral refund question",
+      "expected": {
+        "category": "invoice_payment",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "invoice_payment",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "amount": true
+      },
+      "fields_got": {
+        "amount": "$75"
+      },
+      "corrections": [],
+      "summary": "Leo Grant cancelled a visit on 2 October and asks when the $75 deposit refund will reach their account.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDmYLZn7rTtU1WUdfi",
+        "input_tokens": 1829,
+        "output_tokens": 149,
+        "seconds": 1.82
+      },
+      "seconds": 1.82
+    },
+    {
+      "id": "supplier-shipment",
+      "note": "notification, no reply",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "PipeSupply Co is notifying that order #88412 (copper fittings) will be delivered Thursday between 9 and 12.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDqxVRrVoymnK3287U",
+        "input_tokens": 1837,
+        "output_tokens": 140,
+        "seconds": 1.91
+      },
+      "seconds": 1.91
+    },
+    {
+      "id": "supplier-price-list",
+      "note": "supplier update",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Hall Electrical Wholesale is sending an updated price list with prices changing from 1 December and asks to contact the account manager with questions.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDqxz5H5g8Aio6RSYd",
+        "input_tokens": 1836,
+        "output_tokens": 146,
+        "seconds": 2.05
+      },
+      "seconds": 2.05
+    },
+    {
+      "id": "supplier-delay",
+      "note": "supplier needs an answer, but not today",
+      "expected": {
+        "category": "supplier",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "supplier",
+        "urgency": "today",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Bolt Fixtures says the boiler parts on purchase order 5531 are delayed by two weeks and asks whether to ship the partial order now.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDt8U9x86TLi5NCm2u",
+        "input_tokens": 1845,
+        "output_tokens": 165,
+        "seconds": 1.9
+      },
+      "seconds": 1.9
+    },
+    {
+      "id": "seo-pitch",
+      "note": "pitch",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Growth Partners is pitching SEO and backlink services to generate plumbing leads and offers a free call.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDuNcpEzB81X9a6W7S",
+        "input_tokens": 1834,
+        "output_tokens": 128,
+        "seconds": 1.76
+      },
+      "seconds": 1.76
+    },
+    {
+      "id": "disguised-leads",
+      "note": "lead-selling dressed up as urgent jobs",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "HomeJobs Network is selling plumbing leads at $25 each and asks the company to reply YES to start receiving them.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDzEpNYpySZYwH1KHq",
+        "input_tokens": 1856,
+        "output_tokens": 140,
+        "seconds": 1.88
+      },
+      "seconds": 1.88
+    },
+    {
+      "id": "newsletter",
+      "note": "newsletter",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Trade Weekly sent a newsletter about plumbing business trends that needs no action.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoDzkL54KJS7H9fkYpf",
+        "input_tokens": 1832,
+        "output_tokens": 122,
+        "seconds": 2.15
+      },
+      "seconds": 2.15
+    },
+    {
+      "id": "out-of-office",
+      "note": "auto-reply needs no action",
+      "expected": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "spam_marketing",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Mark Jensen's automatic out-of-office reply says they are away until Monday and no action is needed.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoE2CtDYDZQuLMQRszC",
+        "input_tokens": 1826,
+        "output_tokens": 133,
+        "seconds": 1.79
+      },
+      "seconds": 1.79
+    },
+    {
+      "id": "thanks-only",
+      "note": "nothing to do",
+      "expected": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": false
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Grace Kim says thanks in reply to a visit confirmation.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoE2ymXmig8SsuRN24a",
+        "input_tokens": 1797,
+        "output_tokens": 116,
+        "seconds": 1.95
+      },
+      "seconds": 1.95
+    },
+    {
+      "id": "injection",
+      "note": "prompt injection",
+      "expected": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "quote_request",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Chris Dale wants a quote for fixing a dripping garden tap sometime this month.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoE8BoZAr9pWC7A5EP2",
+        "input_tokens": 1851,
+        "output_tokens": 136,
+        "seconds": 1.85
+      },
+      "seconds": 1.85
+    },
+    {
+      "id": "job-applicant",
+      "note": "not a customer, still needs a reply",
+      "expected": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "other",
+        "urgency": "later",
+        "needs_reply": true
+      },
+      "fields_ok": {},
+      "fields_got": {},
+      "corrections": [],
+      "summary": "Ryan Cole, a second-year apprentice electrician, asks whether the company is hiring and has attached a CV for a placement.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoE9szj6PbwCbuseRxL",
+        "input_tokens": 1832,
+        "output_tokens": 138,
+        "seconds": 2.15
+      },
+      "seconds": 2.15
+    },
+    {
+      "id": "locked-out",
+      "note": "locked out",
+      "expected": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "got": {
+        "category": "new_job",
+        "urgency": "now",
+        "needs_reply": true
+      },
+      "fields_ok": {
+        "phone": true
+      },
+      "fields_got": {
+        "phone": "555-414-9090"
+      },
+      "corrections": [],
+      "summary": "Ivy Chen is locked out of their house at 7 Cedar Road and asks whether the company does locksmith work and can help.",
+      "meta": {
+        "model": "claude-sonnet-5-5",
+        "request_id": "req_011CgfoE9yTUoArP1VxzrgMR",
+        "input_tokens": 1842,
+        "output_tokens": 163,
+        "seconds": 2.17
+      },
+      "seconds": 2.17
+    }
+  ]
+}

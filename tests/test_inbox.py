@@ -114,6 +114,19 @@ def test_invented_fields_are_removed_real_ones_kept():
     assert fake.classification.extracted.phone is None and fake.classification.extracted.address is None
 
 
+@pytest.mark.parametrize("body,amount,kept", [
+    ("We paid a $75 deposit.", "$75", True),           # eval found this: small amounts were dropped
+    ("Pay only $25 per lead.", "$25", True),
+    ("Invoice total $1,250.00 due.", "$1,250.00", True),
+    ("Invoice total $1,250.00 due.", "$250", False),    # digits inside another number don't count
+    ("Order 88412 shipped.", "$84", False),
+])
+def test_amount_must_appear_as_a_number(body, amount, kept):
+    e = email(body=body)
+    x = check(Classification(category="invoice_payment", urgency="later", extracted=Extracted(amount=amount)), e)
+    assert (x.classification.extracted.amount == amount) is kept
+
+
 def test_spam_never_needs_a_reply():
     out = check(Classification(category="spam_marketing", urgency="later", needs_reply=True), LEAK)
     assert out.classification.needs_reply is False
@@ -407,6 +420,19 @@ def test_alert_text_is_defanged():
     t = urgent_text(row, "Dana", "http://h")
     assert "<!channel>" not in t and "@here" not in t and "<https" not in t
     assert t.startswith("Complaint from") and "unknown error" in attention_text(row, "http://h")
+
+
+def test_eval_cases_are_well_formed():
+    from inbox.eval import load_cases
+    from inbox.rules import CATEGORIES, URGENCIES
+    cases = load_cases(ROOT / "evals" / "emails.jsonl")
+    assert len(cases) == 30
+    for c in cases:
+        assert c["category"] in CATEGORIES and c["urgency"] in URGENCIES and isinstance(c["needs_reply"], bool)
+        for v in c.get("fields", {}).values():
+            assert v.lower() in (c["subject"] + " " + c["body"]).lower()   # expected fields really are in the email
+    assert {c["category"] for c in cases} == set(CATEGORIES)
+    assert sum(c["urgency"] == "now" for c in cases) == 8
 
 
 def test_labels():
