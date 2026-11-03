@@ -5,9 +5,14 @@ Sorts a service business's inbox: each email gets a category and an urgency (bac
 The sample business, Harbor Home Services (home repairs), is fictional. Its rules are in `routing.yaml`.
 
 ## Status
-Milestones 1 and 2 of 5 are done: rules, checks, classifiers, routing, drafts, the pipeline with retries, follow-ups, tests and a measured accuracy eval. It runs against an in-memory mailbox and sheet.
+Milestones 1 to 3 of 5 are done: rules, checks, classifiers, routing, drafts, the pipeline with retries, follow-ups, a measured accuracy eval, and real Gmail and Google Sheets connections.
 
-Coming next: the real Gmail and Google Sheets connections, the weekly report, a dashboard and an n8n version.
+Tested live on 2026-11-03 against a demo Gmail account:
+- 7 fictional emails were labelled, routed and logged to a Google Sheet.
+- 4 threaded reply drafts were created, and the urgent and overdue alerts fired.
+- The Sent folder stayed empty.
+
+Coming next: the weekly report, a dashboard and an n8n version.
 
 ## Measured accuracy
 30 fictional emails with hand-labelled category, urgency, reply need and key fields (`evals/emails.jsonl`), run on 2026-11-03. They cover:
@@ -50,6 +55,29 @@ Reproduce with `.venv/bin/python -m inbox.eval --classifier claude --model claud
 6. **Mark processed.** This happens last, so a crash leaves the email safe to pick up again.
 7. **Follow up:** emails past their deadline with no reply in the thread are marked overdue and alerted once. When someone replies, the email is marked replied.
 8. **Failures** (Claude, mailbox, sheet) leave the email in `needs_attention` with the step to resume from. On restart, unfinished emails are completed automatically. A per-email lock stops two threads handling the same email.
+
+## Connect Gmail and Google Sheets
+Use a Gmail account made for testing, not a personal inbox. The AI reads every email the query matches.
+
+1. In Google Cloud (signed in as the test account): create a project and enable the **Gmail API** and **Google Sheets API**.
+2. Under **Google Auth Platform**: set the audience to External, leave the app in Testing, and add the account as a test user.
+3. Under **Clients**: create a **Desktop app** client and save its JSON as `google-credentials/client_secret.json`. That folder is git-ignored.
+4. In `.env`, set `INBOX_TEST_ACCOUNT` to the address and `INBOX_QUERY=label:Demo`. Then run:
+   ```bash
+   .venv/bin/python -m inbox.google_setup login         # browser sign-in, once (testing-mode logins last 7 days)
+   .venv/bin/python -m inbox.google_setup create-sheet  # creates the log sheet, saves SHEET_ID
+   .venv/bin/python -m inbox.google_setup seed          # inserts the fictional emails, labelled Demo (nothing is sent)
+   .venv/bin/python -m inbox.run --once                 # one pass; without --once it keeps polling
+   ```
+
+**Permissions:**
+- `gmail.modify` lets the app read mail, add labels and create drafts. Google has no drafts-only permission, so it could technically send. The code never calls a send method, and a test checks the code for one.
+- `spreadsheets` lets it create and edit the log sheet.
+
+**Safeguards:**
+- Every Google command checks it's signed in as `INBOX_TEST_ACCOUNT` and refuses any other account.
+- `INBOX_QUERY` limits which emails are read.
+- Sheet rows are written as plain text, so a formula in an email is never run.
 
 ## Try it
 ```bash
